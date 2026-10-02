@@ -1,4 +1,6 @@
 import stripe
+from django.core.management import call_command
+from django.http import JsonResponse
 
 from django.conf import settings
 from django.db import IntegrityError, transaction
@@ -282,6 +284,36 @@ class CancelOrderView(APIView):
                 'detail': 'Order cancelled successfully.',
                 'order_id': order.id
             },
+            status=status.HTTP_200_OK
+        )
+
+class ExpireOrdersCronView(APIView):
+    """
+    GET /api/orders/expire/
+
+    Called by Vercel Cron to automatically cancel
+    pending/failed orders older than 24 hours.
+    """
+
+    permission_classes = [permissions.AllowAny]
+    authentication_classes = []
+
+    def get(self, request):
+
+        auth_header = request.headers.get('Authorization')
+
+        expected_auth = f'Bearer {settings.CRON_SECRET}'
+
+        if not settings.CRON_SECRET or auth_header != expected_auth:
+            return Response(
+                {'detail': 'Unauthorized.'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        call_command('expire_orders')
+
+        return Response(
+            {'detail': 'Expired orders processed.'},
             status=status.HTTP_200_OK
         )
 
