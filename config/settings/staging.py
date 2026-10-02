@@ -52,7 +52,8 @@ AWS_S3_FILE_OVERWRITE = False
 SUPABASE_PROJECT_URL = config('SUPABASE_PROJECT_URL')
 
 AWS_S3_CUSTOM_DOMAIN = (
-    f'{SUPABASE_PROJECT_URL}/storage/v1/object/public/{AWS_STORAGE_BUCKET_NAME}'
+    f'{SUPABASE_PROJECT_URL.removeprefix("https://").removeprefix("http://")}'
+    f'/storage/v1/object/public/{AWS_STORAGE_BUCKET_NAME}'
 )
 
 STORAGES = {
