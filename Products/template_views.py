@@ -13,7 +13,7 @@ def product_list_page(request):
     if query:
         products = products.filter(title__icontains=query)
 
-    return render(request, 'products/list.html', {'products': products, 'query': query})
+    return render(request, 'Products/list.html', {'products': products, 'query': query})
 
 
 def product_detail_page(request, pk):
@@ -21,7 +21,7 @@ def product_detail_page(request, pk):
     # template directly via the related_name we set on those models —
     # no API call needed to render the initial page.
     product = get_object_or_404(Product, pk=pk)
-    return render(request, 'products/detail.html', {'product': product})
+    return render(request, 'Products/detail.html', {'product': product})
 
 
 @login_required
@@ -43,4 +43,4 @@ def product_edit_page(request, pk):
     if product.owner != request.user:
         return HttpResponseForbidden("You don't have permission to edit this product.")
 
-    return render(request, 'products/edit.html', {'product': product})
+    return render(request, 'Products/edit.html', {'product': product})
