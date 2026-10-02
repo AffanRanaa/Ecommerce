@@ -1,0 +1,133 @@
+{% extends 'Base.html' %}
+{% load static %}
+{% block title %}{{ product.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    #productCarousel .carousel-control-prev-icon,
+    #productCarousel .carousel-control-next-icon {
+        filter: invert(1) grayscale(100);
+        background-color: rgba(255, 255, 255, 0.6);
+        border-radius: 50%;
+        padding: 12px;
+        background-size: 60%;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        {% if product.images.all %}
+            <div id="productCarousel" class="carousel slide" data-bs-ride="false">
+                <div class="carousel-inner rounded">
+                    {% for image in product.images.all %}
+                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                            <img src="{{ image.image.url }}" alt="{{ product.title }}" class="d-block w-100" style="max-height: 450px; object-fit: contain; background: #f8f9fa;">
+                        </div>
+                    {% endfor %}
+                </div>
+
+                {% if product.images.all|length > 1 %}
+                    <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                    <div class="carousel-indicators">
+                        {% for image in product.images.all %}
+                            <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="{{ forloop.counter0 }}"
+                                    class="{% if forloop.first %}active{% endif %}"
+                                    aria-current="{% if forloop.first %}true{% endif %}"
+                                    aria-label="Slide {{ forloop.counter }}"></button>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="bg-light text-center text-muted py-5 rounded">No images</div>
+        {% endif %}
+    </div>
+
+    <div class="col-md-6">
+        <h2>{{ product.title }}</h2>
+        <p class="text-muted">Serial: {{ product.serial_number }}</p>
+        <p>{{ product.description }}</p>
+        <h4 class="text-primary">${{ product.price }}</h4>
+        <p class="small text-muted">Sold by: {{ product.owner.username }}</p>
+
+        {% if user == product.owner %}
+            <div class="mb-3 d-flex gap-2">
+                <a href="{% url 'product-edit-page' product.pk %}" class="btn btn-outline-primary btn-sm">Edit Product</a>
+                <button type="button" id="delete-product-btn" class="btn btn-outline-danger btn-sm" data-product-id="{{ product.pk }}">Delete Product</button>
+            </div>
+        {% endif %}
+
+        {% if user == product.owner %}
+            <p class="text-muted fst-italic">This is your own product — you can't add it to your cart.</p>
+
+        {% elif product.available_quantity == 0 %}
+            <p class="text-danger fw-semibold mb-0">Out of Stock</p>
+
+        {% else %}
+
+            <form
+                action="{% url 'add-to-cart' product.pk %}"
+                method="POST"
+                class="d-flex align-items-center gap-2">
+                {% csrf_token %}
+
+                <input
+                type="number"
+                name="quantity"
+                value="1"
+                min="1"
+                max="{{ product.available_quantity }}"
+                class="form-control"
+                style="width: 80px;">
+
+                <button type="submit" class="btn btn-success">
+                    Add to Cart
+                </button>
+            </form>
+
+        {% endif %}
+    </div>
+</div>
+
+<hr class="my-4">
+
+<h4>Comments</h4>
+<div id="comments-list" class="mb-3">
+    {% for comment in product.comments.all %}
+        <div class="border-bottom py-2" data-comment-id="{{ comment.id }}">
+            <strong>{{ comment.author.username }}</strong>
+            <p class="mb-1 comment-body-text">{{ comment.body }}</p>
+            {% if user == comment.author %}
+                <button type="button" class="btn btn-sm btn-link p-0 me-2 edit-comment-btn">Edit</button>
+                <button type="button" class="btn btn-sm btn-link text-danger p-0 delete-comment-btn">Delete</button>
+            {% endif %}
+        </div>
+    {% empty %}
+        <p class="text-muted">No comments yet.</p>
+    {% endfor %}
+</div>
+
+{% if user.is_authenticated %}
+    <!-- Phase 8: this form will POST via fetch() to the comments API, no reload -->
+    <div class="mb-2">
+        <textarea id="comment-body" class="form-control" rows="2" placeholder="Write a comment..."></textarea>
+    </div>
+    <button id="post-comment-btn" class="btn btn-primary btn-sm" data-product-id="{{ product.pk }}">Post Comment</button>
+{% else %}
+    <p><a href="{% url 'login' %}">Login</a> to leave a comment.</p>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'js/comments.js' %}"></script>
+    <script src="{% static 'js/product_delete.js' %}"></script>
+{% endblock %}

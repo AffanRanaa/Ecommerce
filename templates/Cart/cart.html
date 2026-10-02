@@ -1,0 +1,272 @@
+{% extends 'Base.html' %}
+{% load static %}
+
+{% block title %}Your Cart{% endblock %}
+
+{% block content %}
+    <h2 class="mb-4">Your Cart</h2>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-info">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    {% if cart_rows %}
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Line Total</th>
+                    <th></th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for row in cart_rows %}
+                    <tr data-cart-row="{{ row.item_id }}">
+
+                        <td>
+                            {{ row.product.title }}
+                        </td>
+
+                        <td>
+                            ${{ row.product.price }}
+                        </td>
+
+                        <td>
+                            <form
+                                method="POST"
+                                class="d-flex cart-update-form"
+                                data-item-id="{{ row.item_id }}"
+                            >
+                                {% csrf_token %}
+
+                                <input
+                                    type="number"
+                                    name="quantity"
+                                    value="{{ row.quantity }}"
+                                    min="1"
+                                    class="form-control form-control-sm"
+                                    style="width: 70px;"
+                                >
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-sm btn-outline-secondary ms-1"
+                                >
+                                    Update
+                                </button>
+                            </form>
+                        </td>
+
+                        <td data-line-total="{{ row.item_id }}">
+                            ${{ row.line_total }}
+                        </td>
+
+                        <td>
+                            <form
+                                method="POST"
+                                class="cart-remove-form"
+                                data-item-id="{{ row.item_id }}"
+                            >
+                                {% csrf_token %}
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-sm btn-outline-danger"
+                                >
+                                    Remove
+                                </button>
+                            </form>
+                        </td>
+
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="row">
+            <div class="col-md-5 ms-auto">
+
+                <div class="card">
+                    <div class="card-body">
+
+                        <!-- Coupon -->
+                        <div id="coupon-section">
+
+                            {% if coupon %}
+
+                                <div
+                                    class="d-flex justify-content-between align-items-center mb-3"
+                                >
+                                    <span
+                                        id="coupon-message"
+                                        class="badge bg-success"
+                                    >
+                                        Coupon "{{ coupon.code }}" applied
+                                    </span>
+
+                                    <form
+                                        method="POST"
+                                        id="remove-coupon-form"
+                                    >
+                                        {% csrf_token %}
+
+                                        <button
+                                            type="submit"
+                                            class="btn btn-sm btn-link text-danger p-0"
+                                        >
+                                            Remove
+                                        </button>
+                                    </form>
+                                </div>
+
+                            {% else %}
+
+                                <form
+                                    method="POST"
+                                    class="d-flex mb-3"
+                                    id="coupon-form"
+                                >
+                                    {% csrf_token %}
+
+                                    <input
+                                        type="text"
+                                        name="coupon_code"
+                                        class="form-control"
+                                        placeholder="Coupon code"
+                                    >
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-outline-primary ms-1"
+                                    >
+                                        Apply
+                                    </button>
+                                </form>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- Price breakdown -->
+
+                        <div class="d-flex justify-content-between">
+                            <span>Subtotal</span>
+
+                            <span id="cart-subtotal">
+                                ${{ subtotal }}
+                            </span>
+                        </div>
+
+
+                        {% if coupon %}
+
+                            <div
+                                id="discount-row"
+                                class="d-flex justify-content-between text-success"
+                            >
+                                <span id="discount-label">
+                                    Discount ({{ coupon_percent }}%)
+                                </span>
+
+                                <span id="cart-discount">
+                                    - ${{ discount_amount }}
+                                </span>
+                            </div>
+
+                        {% else %}
+
+                            <div
+                                id="discount-row"
+                                class="d-none d-flex justify-content-between text-success"
+                            >
+                                <span id="discount-label">
+                                    Discount
+                                </span>
+
+                                <span id="cart-discount">
+                                    - $0
+                                </span>
+                            </div>
+
+                        {% endif %}
+
+
+                        <hr>
+
+
+                        <div
+                            class="d-flex justify-content-between fw-bold fs-5"
+                        >
+                            <span>Total</span>
+
+                            <span id="cart-total">
+                                ${{ total }}
+                            </span>
+                        </div>
+
+
+                        <!-- Checkout -->
+
+                        {% if user.is_authenticated %}
+
+                            <div
+                                id="checkout-page"
+                                data-coupon-code="{{ coupon.code|default:'' }}"
+                                data-order-history-url="{% url 'order-history-page' %}"
+                            >
+
+                                <button
+                                    id="checkout-btn"
+                                    class="btn btn-primary w-100 mt-3"
+                                >
+                                    Proceed to Checkout
+                                </button>
+
+                                <div
+                                    id="checkout-error"
+                                    class="alert alert-danger d-none mt-2"
+                                ></div>
+
+                            </div>
+
+                        {% else %}
+
+                            <a
+                                href="{% url 'login' %}?next={% url 'cart-page' %}"
+                                class="btn btn-primary w-100 mt-3"
+                            >
+                                Login / Signup to Checkout
+                            </a>
+
+                        {% endif %}
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    {% else %}
+
+        <p class="text-muted">Your cart is empty.</p>
+
+    {% endif %}
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script src="{% static 'js/update.js' %}"></script>
+<script src="{% static 'js/remove.js' %}"></script>
+<script src="{% static 'js/coupon.js' %}"></script>
+
+<script src="{% static 'js/checkout.js' %}"></script>
+
+{% endblock %}

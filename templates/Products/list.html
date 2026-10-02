@@ -1,0 +1,32 @@
+{% extends 'Base.html' %}
+{% block title %}All Products{% endblock %}
+
+{% block content %}
+    <h2 class="mb-4">{% if query %}Search results for "{{ query }}"{% else %}All Products{% endif %}</h2>
+
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for product in products %}
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    {% with first_image=product.images.first %}
+                        {% if first_image %}
+                            <div class="d-flex align-items-center justify-content-center bg-light" style="height: 200px; overflow: hidden;">
+                                <img src="{{ first_image.image.url }}" class="img-fluid" style="max-height: 100%; max-width: 100%; object-fit: contain;" alt="{{ product.title }}">
+                            </div>
+                        {% else %}
+                            <div class="bg-light d-flex align-items-center justify-content-center text-muted" style="height: 200px;">No image</div>
+                        {% endif %}
+                    {% endwith %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ product.title }}</h5>
+                        <p class="card-text text-muted small">Serial: {{ product.serial_number }}</p>
+                        <p class="card-text fw-bold">${{ product.price }}</p>
+                        <a href="{% url 'product-detail-page' product.pk %}" class="btn btn-outline-primary btn-sm">View Details</a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <p class="text-muted">No products found.</p>
+        {% endfor %}
+    </div>
+{% endblock %}

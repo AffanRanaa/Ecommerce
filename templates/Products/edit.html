@@ -1,0 +1,208 @@
+{% extends 'Base.html' %}
+{% load static %}
+{% block title %}Edit {{ product.title }}{% endblock %}
+
+{% block content %}
+
+<div
+    id="edit-product-page"
+    data-product-id="{{ product.pk }}"
+    data-product-detail-url="{% url 'product-detail-page' product.pk %}"
+>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="card shadow-sm">
+
+                <div class="card-header bg-dark text-white">
+                    <h4 class="mb-0">Edit Product</h4>
+                </div>
+
+                <div class="card-body">
+
+                    <form id="edit-product-form">
+
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Product Title
+                            </label>
+
+                            <input
+                                type="text"
+                                id="title"
+                                class="form-control"
+                                value="{{ product.title }}"
+                                required
+                            >
+                        </div>
+
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Description
+                            </label>
+
+                            <textarea
+                                id="description"
+                                class="form-control"
+                                rows="5"
+                                required
+                            >{{ product.description }}</textarea>
+                        </div>
+
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Price
+                            </label>
+
+                            <input
+                                type="number"
+                                id="price"
+                                class="form-control"
+                                step="0.01"
+                                min="0"
+                                value="{{ product.price }}"
+                                required
+                            >
+                        </div>
+
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Stock Quantity
+                            </label>
+
+                            <input
+                                type="number"
+                                id="stock_quantity"
+                                class="form-control"
+                                min="0"
+                                value="{{ product.stock_quantity }}"
+                                required
+                            >
+                        </div>
+
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Current Images
+                            </label>
+
+                            <div
+                                id="current-images"
+                                class="row g-2"
+                            >
+
+                                {% for image in product.images.all %}
+
+                                    <div
+                                        class="col-4"
+                                        data-image-id="{{ image.id }}"
+                                    >
+
+                                        <div class="card position-relative">
+
+                                            <img
+                                                src="{{ image.image.url }}"
+                                                class="card-img-top"
+                                                style="height: 100px; object-fit: cover;"
+                                            >
+
+                                            <button
+                                                type="button"
+                                                class="btn btn-sm btn-danger position-absolute top-0 end-0 delete-existing-image-btn"
+                                                data-image-id="{{ image.id }}"
+                                            >
+                                                ×
+                                            </button>
+
+                                        </div>
+
+                                    </div>
+
+                                {% empty %}
+
+                                    <p
+                                        class="text-muted"
+                                        id="no-images-text"
+                                    >
+                                        No images uploaded.
+                                    </p>
+
+                                {% endfor %}
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Add More Images
+                            </label>
+
+                            <input
+                                type="file"
+                                id="new-images"
+                                class="form-control"
+                                accept="image/*"
+                                multiple
+                            >
+
+                            <div
+                                id="new-image-preview"
+                                class="row g-2 mt-2"
+                            ></div>
+
+                            <button
+                                type="button"
+                                id="upload-new-images-btn"
+                                class="btn btn-outline-secondary btn-sm mt-2"
+                            >
+                                Upload Selected Images
+                            </button>
+
+                            <div
+                                id="upload-error"
+                                class="alert alert-danger d-none mt-2"
+                            ></div>
+
+                        </div>
+
+
+                        <div
+                            id="form-error"
+                            class="alert alert-danger d-none"
+                        ></div>
+
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary w-100"
+                        >
+                            Save Changes
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script src="{% static 'js/edit_product.js' %}"></script>
+
+{% endblock %}

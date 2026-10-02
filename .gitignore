@@ -1,0 +1,28 @@
+# Environment variables
+.env
+.env.production
+
+# Virtual environment
+venv/
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Django
+db.sqlite3
+staticfiles/
+
+# User uploaded files
+media/
+product_images/
+profile_pictures/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
